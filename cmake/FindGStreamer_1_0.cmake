@@ -54,21 +54,29 @@ set(GSTREAMER_1_0_MINIMUM_VERSION 1.0.5)
 #   _component_prefix is prepended to the _INCLUDE_DIRS and _LIBRARIES variables (eg. "GSTREAMER_1_0_AUDIO")
 #   _pkgconfig_name is the component's pkg-config name (eg. "gstreamer-1.0", or "gstreamer-video-1.0").
 #   _library is the component's library name (eg. "gstreamer-1.0" or "gstvideo-1.0")
-macro(FIND_GSTREAMER_COMPONENT _component_prefix _pkgconfig_name _library)
+macro(FIND_GSTREAMER_COMPONENT _component_prefix _component_name _library)
     # FIXME: The QUIET keyword can be used once we require CMake 2.8.2.
 
-    string(REGEX MATCH "(.*)>=(.*)" _dummy "${_pkgconfig_name}")
-    if ("${CMAKE_MATCH_2}" STREQUAL "")
-        pkg_check_modules(PC_${_component_prefix} "${_pkgconfig_name} >= ${GStreamer_FIND_VERSION}")
-    else ()
-        pkg_check_modules(PC_${_component_prefix} ${_pkgconfig_name})
-    endif ()
-    set(${_component_prefix}_INCLUDE_DIRS ${PC_${_component_prefix}_INCLUDE_DIRS})
+#    string(REGEX MATCH "(.*)>=(.*)" _dummy "${_pkgconfig_name}")
+#    if ("${CMAKE_MATCH_2}" STREQUAL "")
+#        pkg_check_modules(PC_${_component_prefix} "${_pkgconfig_name} >= ${GStreamer_FIND_VERSION}")
+#    else ()
+#        pkg_check_modules(PC_${_component_prefix} ${_pkgconfig_name})
+#    endif ()
+#    set(${_component_prefix}_INCLUDE_DIRS ${PC_${_component_prefix}_INCLUDE_DIRS})
 
     find_library(${_component_prefix}_LIBRARIES
         NAMES ${_library} gstreamer_android
-        HINTS ${PC_${_component_prefix}_LIBRARY_DIRS} ${PC_${_component_prefix}_LIBDIR} ${GSTREAMER_1_0_ROOT_DIR}
+        HINTS "${GSTREAMER_1_0_ROOT_DIR}/lib"
     )
+
+    if(${_component_prefix}_LIBRARIES)
+        message(STATUS "Found ${_component_name}")
+    else()
+        message(STATUS "${_library} was not found!")
+    endif()
+
+    message(STATUS ${_component_prefix}_LIBRARIES " " ${${_component_prefix}_LIBRARY})
 endmacro()
 
 # ------------------------
@@ -78,6 +86,9 @@ endmacro()
 # 1.1. Find headers and libraries
 set(GLIB_ROOT_DIR ${GSTREAMER_1_0_ROOT_DIR})
 find_package(Glib REQUIRED)
+
+set(GSTREAMER_1_0_INCLUDE_DIRS ${GSTREAMER_1_0_INCLUDE_DIRS} "${GSTREAMER_1_0_ROOT_DIR}/include/gstreamer-1.0/gst")
+
 FIND_GSTREAMER_COMPONENT(GSTREAMER_1_0 gstreamer-1.0 gstreamer-1.0)
 FIND_GSTREAMER_COMPONENT(GSTREAMER_1_0_BASE gstreamer-base-1.0 gstbase-1.0)
 
